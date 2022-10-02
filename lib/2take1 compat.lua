@@ -1,6 +1,20 @@
 util.require_natives(1651208000)
 util.keep_running()
 
+
+-- Secondary libraries required, to be able to use all without updating every single native
+--local required <const> = {
+--	"lib/natives-1651208000.lua",
+--	"lib/natives-1883599433.lua"
+--}
+
+--local scriptdir <const> = filesystem.scripts_dir()
+--for _, file in ipairs(required) do
+--	assert(filesystem.exists(scriptdir .. file), "Required file not found:" .. file)
+--end
+
+--local newn = require "lib.natives-1883599433.lua"
+
 -- keep stand-specific apis to ourselves
 local stand = menu
 local players = _G["players"]; _G["players"] = nil
@@ -771,6 +785,7 @@ local feature_types = {
 --	end
 --end)
 
+
 menu = {
 	add_feature = function (name, type, parent, handler)
 		local feature_type = feature_types[type]
@@ -945,6 +960,65 @@ input = {
 	end
 }
 
+
+-- Added by XxpichoclesxX#0427
+
+-- New natives from system (natives-1663599433)
+-- Not sure if working, thats why is not active
+-- This is for scripts using the Proddy#7272 library on 2take1
+-- Start scripts Gta V natives
+
+--system = {
+--  natives.system.settimera = newn.SYSTEM.SETTIMERA,
+--  natives.system.settimerb = newn.SYSTEM.SETTIMERB,
+--  natives.system.timestep = newn.SYSTEM.TIMESTEP,
+--  natives.system.sin = newn.SYSTEM.SIN,
+--  natives.system.cos = newn.SYSTEM.COS,
+--  natives.system.sqrt = newn.SYSTEM.SQRT, 
+--  natives.system.pow = newn.SYSTEM.POW, 
+--  natives.system.log10 = newn.SYSTEM.LOG10,
+--  natives.system.vmag = newn.SYSTEM.VMAG,
+--  natives.system.vmag = newn.SYSTEM.VMAG2,
+--  natives.system.vdist = newn.SYSTEM.VDIST,
+--  natives.system.vdist2 = newn.SYSTEM.VDIST2,
+--  natives.system.shift_left = newn.SYSTEM.SHIFT_LEFT,
+--  natives.system.shift_right = newn.SYSTEM.SHIFT_RIGHT,
+--  natives.system.floor = newn.SYSTEM.FLOOR,
+--  natives.system.ceil = newn.SYSTEM.CEIL,
+--  natives.system.round = newn.SYSTEM.ROUND,
+--  natives.system.to_float = newn.SYSTEM.TO_FLOAT,
+--  natives.system.set_thread_priority = newn.SYSTEM.SET_THREAD_PRIORITY,
+--  natives.system.timera = newn.SYSTEM.TIMERA,
+--  natives.system.timerb = newn.SYSTEM.TIMERB,
+--  system.start_new_script_with_name_hash_and_args = newn.SYSTEM.START_NEW_SCRIPT_WITH_NAME_HASH_AND_ARGS,
+--	system.start_new_script = newn.SYSTEM.START_NEW_SCRIPT
+--}
+
+--Also from Proddy#7272 library
+-- Not sure if working
+-- New natives from app (natives-1663599433)
+
+--app = {
+--  natives.app.app_data_valid = newn.APP.APP_DATA_VALID,
+--  natives.app.app_get_int =  newn.APP.APP_GET_INT,
+--  natives.app.app_get_float = newn.APP.APP_GET_FLOAT,
+--  natives.app.app_get_string = newn.APP.APP_GET_STRING,
+--  natives.app.app_set_int = newn.APP.APP_SET_INT,
+--  natives.app.app_set_float = newn.APP.APP_SET_FLOAT,
+--  natives.app.app_set_string = newn.APP.APP_SET_STRING,
+--  natives.app.app_set_app = newn.APP.APP_SET_APP,
+--  natives.app.app_set_block = newn.APP.APP_SET_BLOCK,
+--  natives.app.app_clear_block = newn.APP.APP_CLEAR_BLOCK,
+--  natives.app.app_close_app = newn.APP.APP_CLOSE_APP,
+--  natives.app.app_close_block = newn.APP.APP_CLOSE_BLOCK,
+--  natives.app.app_has_linked_social_club_account = newn.APP.APP_HAS_LINKED_SOCIAL_CLUB_ACCOUNT,
+--  natives.app.app_has_synced_data = newn.APP.APP_HAS_SYNCED_DATA,
+--  natives.app.app_save_data = newn.APP.APP_SAVE_DATA,
+--  natives.app.app_get_deleted_file_status = newn.APP.APP_GET_DELETED_FILE_STATUS,
+--  natives.app.app_delete_app_data = newn.APP.APP_DELETE_APP_DATA
+--}
+
+
 ui = {
 	notify_above_map = function (text, title, colour)
 		util.toast(title.."\n"..text, TOAST_ABOVE_MAP)
@@ -956,6 +1030,8 @@ ui = {
 	set_blip_colour = HUD.SET_BLIP_COLOUR,
 	hide_hud_component_this_frame = HUD.HIDE_HUD_COMPONENT_THIS_FRAME,
 	hide_hud_and_radar_this_frame = HUD.HIDE_HUD_AND_RADAR_THIS_FRAME,
+	hide_minimap_exterior_map_this_frame = HUD.HIDE_MINIMAP_EXTERIOR_MAP_THIS_FRAME,
+	hide_minimap_interior_map_this_frame = HUD.HIDE_MINIMAP_INTERIOR_MAP_THIS_FRAME,
 	get_label_text = HUD._GET_LABEL_TEXT,
 	draw_rect = GRAPHICS.DRAW_RECT,
 	draw_line = function (pos1, pos2 , r, g, b, a)
