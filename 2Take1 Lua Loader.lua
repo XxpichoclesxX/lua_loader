@@ -85,18 +85,22 @@ local function init()
 			end)
 		end
 	end
-end
 
-local credits = stand.list(stand.my_root(), "Credits", {}, "")
-menu.action(credits, "moonlightlotuos", {}, "The pioneer of this script.", function()
+
+	local credits = stand.list(stand.my_root(), "Credits", {}, "")
+
+    stand.action(credits, "moonlightlotuos", {}, "The pioneer of this script.", function()
+    end)
+    stand.action(credits, "XYGTA5", {}, "Added some 2take1 scripts.", function()
+    end)
+    stand.action(credits, "InfiniteCod3", {}, "Also added 2take1 scripts.", function()
+    end)
+    stand.action(credits, "XxRagulxX", {}, "Some installation guides.", function()
+    end)
+    stand.action(credits, "XxpichoclesxX", {}, "Added natives libraries and helped with compatibility.", function()
 end)
-menu.action(credits, "XYGTA5", {}, "Added some 2take1 scripts.", function()
-end)
-menu.action(credits, "InfiniteCod3", {}, "Also added 2take1 scripts.", function()
-end)
-menu.action(credits, "XxRagulxX", {}, "Some installation guides.", function()
-end)
-menu.action(credits, "XxpichoclesxX", {}, "Added natives libraries and helped with compatibility.", function()
-end)
+
+
+end
 
 init()
