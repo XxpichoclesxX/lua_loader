@@ -1,6 +1,34 @@
 util.require_natives(1651208000)
 util.keep_running()
-stand = menu
+
+-- keep stand-specific apis to ourselves
+local stand = menu
+local players = _G["players"]; _G["players"] = nil
+local entities = _G["entities"]; _G["entities"] = nil
+local chat = _G["chat"]; _G["chat"] = nil
+local directx = _G["directx"]; _G["directx"] = nil
+local util = _G["util"]; _G["util"] = nil
+local lang = _G["lang"]; _G["lang"] = nil
+local filesystem = _G["filesystem"]; _G["filesystem"] = nil
+local async_http = _G["async_http"]; _G["async_http"] = nil
+local memory = _G["memory"]; _G["memory"] = nil
+local profiling = _G["profiling"]; _G["profiling"] = nil
+
+-- you wouldn't fork a lua
+_PVERSION=nil;newuserdata=nil;io.isdir=nil;io.isfile=nil;io.exists=nil;io.copyto=nil;io.filesize=nil;io.makedir=nil;io.absolute=nil;os.millis=nil;os.nanos=nil;os.seconds=nil;os.unixseconds=nil;string.split=nil;string.lfind=nil;string.rfind=nil;string.strip=nil;string.lstrip=nil;string.rstrip=nil;string.isascii=nil;string.islower=nil;string.isalpha=nil;string.isupper=nil;string.isalnum=nil;string.contains=nil;string.casefold=nil;string.partition=nil;string.endswith=nil;string.startswith=nil;string.find_last_of=nil;string.find_first_of=nil;string.iswhitespace=nil;string.find_last_not_of=nil;string.find_first_not_of=nil;table.freeze=nil;table.isfrozen=nil;table.contains=nil;
+
+-- solving problems for users of our platform? no way!
+SCRIPT_NAME=nil
+SCRIPT_FILENAME=nil
+SCRIPT_RELPATH=nil
+SCRIPT_MANUAL_START=nil
+SCRIPT_SILENT_START=nil
+SCRIPT_MAY_NEED_OS=nil
+-- On that note, let's just appreciate all the work kektram is doing:
+-- "YOU WOULD HAVE CRASHED IF THIS CHECK WASN'T HERE."
+-- "Fixed people being able to spawn certain new vehicles that crash your game with chat commands"
+
+package.path = package.path .. ";" .. filesystem.stand_dir() .. "From 2Take1Menu\\scripts\\?.lua"
 
 local config = {
 	spoof_2take1_install_dir = true
@@ -112,8 +140,22 @@ local feature_type_ids = { -- The table values are stolen from kek's essentials.
 
 vec3 = v3
 
+local v2_meta = {
+	__div=function (self, other)
+		if type(other) == "table" then
+			return v2(	self.x / other.x,
+						self.y / other.y)
+		elseif type(other) == "number" then
+			return v2(	self.x / other,
+						self.y / other)
+		end
+	end,
+}
+
 v2 = function (x, y)
-	return {x = x, y = y}
+	local inst = {x = x, y = y}
+	setmetatable(inst, v2_meta)
+	return inst
 end
 
 local v3_meta = {
@@ -177,6 +219,9 @@ local v3_meta = {
 }
 
 v3 = function (x, y, z)
+	x = x or 0.0
+	y = y or 0.0
+	z = z or 0.0
 	local vec =
 	{	x = x, y = y or x, z = z or x,
 
@@ -401,6 +446,8 @@ local feature_meta = {
 
 local player_features = {}
 
+
+
 local feat = {
     new = function(name, parent, type)
 		local parent_ft = parents[parent]
@@ -417,6 +464,7 @@ local feat = {
 			_value=0,
 			_hidden=false,
 			set_str_data = function (self, data)
+				self.str_data = data
 				local feat = player_features[self.id]
 				if feat then
 					for _, command in ipairs(feat) do
@@ -473,7 +521,13 @@ parents[root_parent.id] = root_parent
 
 local feature_types = {
 	parent = function (name, parent, handler, pid)
-		if parent == 0 or parent == nil then parent = pid and stand.player_root(pid) or stand.my_root() end
+		if parent == 0 or parent == nil then
+			if pid then
+				parent = stand.player_root(pid)
+			else
+				parent = stand.my_root()
+			end
+		end
 		local f = feat.new(name, parent)
 
 		f.id = stand.list(parent, name, {name}, "", function ()
@@ -710,6 +764,13 @@ local feature_types = {
 	end
 }
 
+--players.on_join(function(pid)
+--	for _, playerfeat in pairs(player_features) do
+--		local parent_playerfeat = player_features[playerfeat.parent].playerfeat
+--		playerfeat.playerfeat.feats[#playerfeat.playerfeat.feats + 1] = feature_types[playerfeat.type](playerfeat.name, parent_playerfeat.id, playerfeat.handler, pid)
+--	end
+--end)
+
 menu = {
 	add_feature = function (name, type, parent, handler)
 		local feature_type = feature_types[type]
@@ -723,9 +784,9 @@ menu = {
 		local feature_type = feature_types[type]
 		if feature_type == nil then util.toast(type.." not found") return end
 		local feats = {}
-		local features = player_features[parent]
-		if features then
-			for _, p_feat in pairs(features.feats) do
+		local parent_playerfeat = player_features[parent]
+		if parent_playerfeat then
+			for _, p_feat in pairs(parent_playerfeat.playerfeat.feats) do
 				local new_feat = feature_type(name, p_feat.id, handler or function() end, p_feat.pid)
 				new_feat.pid = p_feat.pid
 				new_feat.type = feature_type_ids.regular[type]
@@ -733,7 +794,7 @@ menu = {
 			end
 		else
 			for _, pid in ipairs(players.list()) do
-				if parent == nil or parent == 0 then parent = stand.player_root(pid) end
+				parent = stand.player_root(pid)
 
 				local new_feat = feature_type(name, parent, handler or function() end, pid)
 				new_feat.pid = pid
@@ -744,10 +805,15 @@ menu = {
 
 		local new_player_feat = player_feat.new(parent, feats, feature_type_ids.player[type])
 
-		new_player_feat.id = util.joaat(name..type) --generate an id to use for the player feature
+		new_player_feat.id = util.joaat(name..type..tostring(util.current_time_millis())) --generate an id to use for the player feature
 
-		existing_features[new_player_feat.id] = new_player_feat
-		player_features[new_player_feat.id] = new_player_feat
+		player_features[new_player_feat.id] = {
+			playerfeat = new_player_feat,
+			name = name,
+			type = type,
+			parent = parent,
+			handler = handler
+		}
 		return new_player_feat
 	end,
 	notify = function (message, title, _, _)
@@ -756,17 +822,17 @@ menu = {
 		util.toast(message, TOAST_ALL)
 	end,
 	get_player_feature = function (id)
-		return player_features[id]
+		return player_features[id].playerfeat
 	end,
 	delete_feature = function (id)
-		local feature = existing_features[id]
+		local feature = existing_features[id] or player_features[id].playerfeat
 		if feature then
 			feature.parent.children[feature.id] = nil
 		end
 		stand.delete(id)
 	end,
 	delete_player_feature = function (id)
-		local p_feature = player_features[id]
+		local p_feature = player_features[id].playerfeat
 		if p_feature then
 			for _, feature in pairs(p_feature.feats) do
 				feature.parent.children[feature.id] = nil
@@ -776,8 +842,20 @@ menu = {
 		end
 	end,
 	create_thread = util.create_thread,
+	has_thread_finished = function (t)
+		if type(t) == "thread" then
+			return coroutine.status(t) == "dead"
+		end
+		return true
+	end,
+	delete_thread = function()
+		notif_not_imp()
+	end,
 	is_trusted_mode_enabled = function ()
 		return true
+	end,
+	get_version = function ()
+		return "2.62.1"
 	end
 }
 
@@ -809,18 +887,23 @@ utils = {
 	end,
 	file_exists = filesystem.exists,
 	dir_exists = filesystem.is_dir,
-	make_dir = filesystem.mkdir,
+	make_dir = filesystem.mkdirs,
 	get_appdata_path = function (dir, file)
-		if config.spoof_2take1_install_dir and dir == "PopstarDevs" and file == "2Take1Menu" then
-			return	filesystem.stand_dir() .. "From 2Take1Menu\\"
+		if dir[-1] == "\\" then
+			dir = dir:sub(1, -2)
 		end
-		local file = filesystem.appdata_dir()..dir.."\\"..file
-		if filesystem.exists(file) then
-			return file
+		if file ~= "" then
+			dir ..= "\\"..file
+		end
+		if config.spoof_2take1_install_dir and dir:sub(1, 22) == "PopstarDevs\\2Take1Menu" then
+			dir = filesystem.stand_dir() .. "From 2Take1Menu\\" .. dir:sub(24)
 		else
-			filesystem.mkdir(file)
-			return file
+			dir = filesystem.appdata_dir() .. dir
 		end
+		if not filesystem.exists(dir) then
+			filesystem.mkdir(dir)
+		end
+		return dir
 	end,
 	from_clipboard = util.get_clipboard_text,
 	to_clipboard = util.copy_to_clipboard,
@@ -841,9 +924,7 @@ utils = {
 		for i, value in ipairs(vec) do
 			memory.write_long(mem+(8 * (i -1)), value)
 		end
-		local result = memory.read_string(mem)
-		memory.free(mem)
-		return result
+		return memory.read_string(mem)
 	end
 }
 
@@ -933,8 +1014,24 @@ ui = {
 scriptdraw = {
 	register_sprite = directx.create_texture,
 	draw_sprite = function (id, pos, scale, rot, colour)
-		c = IntToRGBA(colour)
+		local c = IntToRGBA(colour)
 		directx.draw_texture(id, scale, scale, 0.5 , 0.5, pos.x, pos.y, rot, c[1], c[2], c[3], c[4])
+	end,
+	get_text_size = function (str, factor)
+		return v2(0.001, 0.001)
+	end,
+	size_pixel_to_rel_x = function (x)
+		return x
+	end,
+	size_pixel_to_rel_y = function (y)
+		return y
+	end,
+	draw_text = function (text, pos, size, scale, rgba, outline, unk)
+		util.BEGIN_TEXT_COMMAND_DISPLAY_TEXT(text)
+		HUD.END_TEXT_COMMAND_DISPLAY_TEXT(pos.x, pos.y, 0)
+	end,
+	draw_line = function(pos1, pos2, unk, rgba)
+		notif_not_imp()
 	end
 }
 
@@ -955,7 +1052,6 @@ player = {
 		local ent = memory.alloc_int()
 		PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(pid, ent)
 		local result = memory.read_int(ent)
-		memory.free(ent)
 		return result
 	end,
 	get_personal_vehicle = entities.get_user_personal_vehicle_as_handle,
@@ -1075,7 +1171,7 @@ ped = {
 	is_ped_shooting = PED.IS_PED_SHOOTING,
 	get_ped_bone_index = PED.GET_PED_BONE_INDEX,
 	get_ped_bone_coords = function (ped, boneindex, offset)
-		return PED.GET_PED_BONE_COORDS(ped, boneindex, offset.x, offset.y, offset.z)
+		return true, PED.GET_PED_BONE_COORDS(ped, boneindex, offset.x, offset.y, offset.z)
 	end,
 	get_ped_relationship_group_hash = PED.GET_PED_RELATIONSHIP_GROUP_HASH,
 	set_ped_relationship_group_hash = PED.SET_PED_RELATIONSHIP_GROUP_HASH,
@@ -1159,7 +1255,7 @@ ped = {
 network = {
 	network_is_host = NETWORK.NETWORK_IS_HOST,
 	has_control_of_entity = NETWORK.NETWORK_HAS_CONTROL_OF_ENTITY,
-	request_control_of_entity = NETWORK.REQUEST_CONTROL_OF_ENTITY,
+	request_control_of_entity = NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY,
 	is_session_started = NETWORK.NETWORK_IS_SESSION_STARTED,
 	network_session_kick_player = NETWORK.NETWORK_SESSION_KICK_PLAYER,
 	is_friend_online = NETWORK.NETWORK_IS_FRIEND_ONLINE,
@@ -1232,7 +1328,9 @@ entity = {
 	apply_force_to_entity = ENTITY.APPLY_FORCE_TO_ENTITY,
 	get_entity_attached_to = ENTITY.GET_ENTITY_ATTACHED_TO,
 	detach_entity = ENTITY.DETACH_ENTITY,
-	get_entity_model_hash = ENTITY.GET_ENTITY_MODEL,
+	get_entity_model_hash = function (veh)
+		return int_to_uint(ENTITY.GET_ENTITY_MODEL(veh))
+	end,
 	get_entity_heading = ENTITY.GET_ENTITY_HEADING,
 	attach_entity_to_entity = function (subject,  target,  boneIndex,  offset,  rot,  softPinning,  collision,  isPed,  vertexIndex,  fixedRot)
 		ENTITY.ATTACH_ENTITY_TO_ENTITY(subject, target, boneIndex, offset.x, offset.y, offset.z, rot.x, rot.y, rot.z, false,  softPinning, collision, isPed, vertexIndex, fixedRot)
@@ -1245,7 +1343,6 @@ entity = {
 		local ent_ptr = memory.alloc_int()
 		memory.write_int(ent_ptr, ent)
 		ENTITY.SET_ENTITY_AS_NO_LONGER_NEEDED(ent_ptr)
-		memory.free(ent_ptr)
 	end,
 	set_entity_no_collsion_entity = ENTITY.SET_ENTITY_NO_COLLISION_ENTITY,
 	freeze_entity = ENTITY.FREEZE_ENTITY_POSITION,
@@ -1262,7 +1359,7 @@ entity = {
 	set_entity_max_speed = ENTITY.SET_ENTITY_MAX_SPEED,
 	get_entity_pitch = ENTITY.GET_ENTITY_PITCH,
 	get_entity_roll = ENTITY.GET_ENTITY_ROLL,
-	--get_entity_physics_rotation = !#! NO MATCH FOUND !#!,
+	--get_entity_physics_rotation = ENTITY.GET_ENTITY_ROTATION, --Maybe is the same
 	get_entity_physics_heading = ENTITY._GET_ENTITY_PHYSICS_HEADING,
 	--get_entity_physics_pitch = !#! NO MATCH FOUND !#!,
 	--get_entity_physics_roll = !#! NO MATCH FOUND !#!,
@@ -1280,7 +1377,7 @@ entity = {
 	has_entity_been_damaged_by_entity = ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY,
 	does_entity_have_drawable = ENTITY.DOES_ENTITY_HAVE_DRAWABLE,
 	has_entity_collided_with_anything = ENTITY.HAS_ENTITY_COLLIDED_WITH_ANYTHING,
-	--get_entity_entity_has_collided_with = !#! NO MATCH FOUND !#!,
+	--get_entity_entity_has_collided_with = !#! NO MATCH FOUND !#!,   -- No native invokes this shit
 	get_entity_bone_index_by_name = ENTITY.GET_ENTITY_BONE_INDEX_BY_NAME,
 	get_entity_forward_vector = ENTITY.GET_ENTITY_FORWARD_VECTOR,
 	get_entity_model_dimensions = function (hash)
@@ -1307,21 +1404,18 @@ stats = {
 		local value_ptr = memory.alloc_int()
 		local state = STATS.STAT_GET_INT(hash, value_ptr, unk)
 		local value = memory.read_int(value_ptr)
-		memory.free(value_ptr)
 		return value, state
 	end,
 	stat_get_float = function (hash, unk)
 		local value_ptr = memory.alloc_int()
 		local state = STATS.STAT_GET_FLOAT(hash, value_ptr, unk)
 		local value = memory.read_float(value_ptr)
-		memory.free(value_ptr)
 		return value, state
 	end,
 	stat_get_bool = function (hash, unk)
 		local value_ptr = memory.alloc_int()
 		local state = STATS.STAT_GET_BOOl(hash, value_ptr, unk)
 		local value = memory.read_bool(value_ptr)
-		memory.free(value_ptr)
 		return value, state
 	end,
 	stat_set_int = STATS.STAT_SET_INT,
@@ -1521,7 +1615,6 @@ vehicle = {
 		local colour_ptr = memory.alloc(12)
 		VEHICLE._GET_VEHICLE_NEON_LIGHTS_COLOUR(veh, colour_ptr, colour_ptr + 4, colour_ptr + 8)
 		local colour = RGBAToInt(memory.read_byte(colour_ptr), memory.read_byte(colour_ptr + 4), memory.read_byte(colour_ptr + 8), 255)
-		memory.free(colour_ptr)
 		return colour
 	end,
 	set_vehicle_neon_light_enabled = VEHICLE._SET_VEHICLE_NEON_LIGHT_ENABLED,
@@ -1565,14 +1658,12 @@ vehicle = {
 		local a, b = memory.alloc_int(), memory.alloc_int()
 		VEHICLE.GET_VEHICLE_COLOURS(veh, a, b)
 		local colour = memory.read_int(a)
-		memory.free(a) memory.free(b)
 		return colour
 	end,
 	get_vehicle_secondary_color = function (veh)
 		local a, b = memory.alloc_int(), memory.alloc_int()
 		VEHICLE.GET_VEHICLE_COLOURS(veh, a, b)
 		local colour = memory.read_int(b)
-		memory.free(a) memory.free(b)
 		return colour
 	end,
 	get_vehicle_pearlecent_color = function (veh)
@@ -1746,7 +1837,6 @@ rope = {
 		local rope_ptr = memory.alloc_int()
 		memory.write_int(rope_ptr, rope)
 		PHYSICS.DELETE_ROPE(rope_ptr)
-		memory.free(rope_ptr)
 	end,
 	attach_rope_to_entity = function (rope, e, offset, a3)
 		PHYSICS.ATTACH_ROPE_TO_ENTITY(rope, e, offset.x, offset.y, offset.z, a3)
@@ -1856,12 +1946,15 @@ graphics = {
 	set_checkpoint_icon_rgba = 	GRAPHICS.SET_CHECKPOINT_RGBA2,
 	delete_checkpoint = GRAPHICS.DELETE_CHECKPOINT,
 	has_scaleform_movie_loaded = GRAPHICS.HAS_SCALEFORM_MOVIE_LOADED,
-	set_scaleform_movie_as_no_longer_needed = GRAPHICS.SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED,
+	set_scaleform_movie_as_no_longer_needed = function(h)
+		local pH = memory.alloc_int()
+		memory.write_int(pH, h)
+		GRAPHICS.SET_SCALEFORM_MOVIE_AS_NO_LONGER_NEEDED(pH)
+	end,
 	project_3d_coord = function (coord)
 		local x_ptr, y_ptr = memory.alloc_int(), memory.alloc_int()
 		local status = GRAPHICS.GET_SCREEN_COORD_FROM_WORLD_COORD(coord.x, coord.y, coord.z, x_ptr, y_ptr)
 		local x, y = memory.read_float(x_ptr), memory.read_float(y_ptr)
-		memory.free(x) memory.free(y)
 		return status, v2(x, y)
 	end,
 	}
@@ -2066,6 +2159,56 @@ decorator = {
 	decor_set_time = DECORATOR.DECOR_SET_TIME,
 }
 
+hook = { -- silently ignore all this shit because, guess what, stand comes with protections
+	register_script_event_hook = function() end,
+	register_net_event_hook = function() end,
+	remove_script_event_hook = function() end,
+	remove_net_event_hook = function() end,
+}
+
+native = {
+	call = function(hash, ...)
+		local args = { ... }
+		native_invoker.begin_call()
+		for _, arg in ipairs(args) do
+			pluto_switch type(arg) do
+				pluto_case "int":
+				native_invoker.push_arg_int(arg)
+				break
+
+				pluto_case "number":
+				local i, f = math.modf(arg)
+				if f == 0 then
+					native_invoker.push_arg_int(arg)
+				else
+					native_invoker.push_arg_float(arg)
+				end
+				break
+
+				pluto_case "boolean":
+				native_invoker.push_arg_bool(arg)
+				break
+
+				pluto_default:
+				error("Unsupported argument for native.call: " .. type(arg) .. " " .. tostring(arg))
+			end
+		end
+		native_invoker.end_call(string.format("%X", hash))
+		return {
+			__tointeger = native_invoker.get_return_value_int,
+			__tonumber = native_invoker.get_return_value_float,
+			__tostring = native_invoker.get_return_value_string,
+			__tov3 = native_invoker.get_return_value_vector3,
+		}
+	end
+}
+
+web = {
+	urlencode = function (str) return str end,
+	urldecode = function (str) return str end,
+	get = function () return 0, "" end
+}
+
 local fucky_meta = {
 	__newindex=function ()
 	end
@@ -2092,5 +2235,18 @@ setmetatable(streaming, fucky_meta)
 setmetatable(ai, fucky_meta)
 setmetatable(cam, fucky_meta)
 setmetatable(fire, fucky_meta)
+setmetatable(hook, fucky_meta)
+setmetatable(native, fucky_meta)
+setmetatable(web, fucky_meta)
+
+-- checked by 2take1script to make sure the script is loaded via 2take1
+-- they might replace this check in a future version, in which case, feel free to use the files from the "From 2Take1Menu" folder in this repository
+local og_tostring = tostring
+tostring = function(v)
+	if type(v) == "table" and #v == 0 then
+		return "[]"
+	end
+	return og_tostring(v)
+end
 
 return config

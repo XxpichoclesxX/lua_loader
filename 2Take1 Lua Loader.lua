@@ -1,3 +1,6 @@
+local stand = menu
+local util = _G["util"]
+local filesystem = _G["filesystem"]
 local config = require("2take1 compat")
 
 local og_g_keys = {}
@@ -8,16 +11,18 @@ end
 local function init()
 	stand.action(stand.my_root(), "Reset State", {}, "", function()
 		-- reset stand runtime
-		util.reset_state()
+		util.dispatch_on_stop()
+		util.stop_all_threads()
+		util.keep_running()
+		util.clear_commands_and_event_handlers()
 		-- reset global vars to avoid scripts crying about already being loaded
 		for k, v in pairs(_G) do
 			if og_g_keys[k] == nil then
 				_G[k] = nil
 			end
 		end
-		-- reinit
-		util.keep_running()
-		init()
+		-- restarts entire scripts
+		util.restart_script()
 	end)
 
 	local settings_list = stand.list(stand.my_root(), "Settings", {}, "")
@@ -25,6 +30,7 @@ local function init()
 		config.spoof_2take1_install_dir = value
 	end, true)
 
+	-- This will tell how to start 2take1 scripts into appdata
 	local no_scripts = true
 	local lua_list = stand.list(stand.my_root(), "Load Scripts", {}, "", function()
 		if no_scripts then
