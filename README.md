@@ -1,5 +1,5 @@
 # lua_loader
-A lua loader for stand to load 2take1 luas.
+A lua loader for stand
 
 # Installation
 - [Download](https://github.com/XxpichoclesxX/lua_loader/releases/download/LuaLoader/Lua.Loader.zip)
