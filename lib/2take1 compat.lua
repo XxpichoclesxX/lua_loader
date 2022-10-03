@@ -963,7 +963,7 @@ input = {
 
 -- Added by XxpichoclesxX#0427
 
--- New natives from system (natives-1663599433)
+-- New system natives from (natives-1663599433)
 -- Not sure if working, thats why is not active
 -- This is for scripts using the Proddy#7272 library on 2take1
 -- Start scripts Gta V natives
@@ -996,7 +996,7 @@ input = {
 
 --Also from Proddy#7272 library
 -- Not sure if working
--- New natives from app (natives-1663599433)
+-- New app natives from (natives-1663599433)
 
 --app = {
 --  natives.app.app_data_valid = newn.APP.APP_DATA_VALID,
@@ -2127,10 +2127,23 @@ streaming = {
 audio = {
 	play_sound = AUDIO.PLAY_SOUND,
 	play_sound_frontend = AUDIO.PLAY_SOUND_FRONTEND,
+	play_defered_sound_frontend = AUDIO.PLAY_DEFERRED_SOUND_FRONTEND,
 	play_sound_from_entity = AUDIO.PLAY_SOUND_FROM_ENTITY,
+	play_ped_ringtone = AUDIO.PLAY_PED_RINGTONE,
+	is_ped_ringtone_playing = AUDIO.IS_PED_RINGTONE_PLAYING,
+	stop_ped_ringtone = AUDIO.STOP_PED_RINGTONE,
+	get_network_id_from_sound_id = AUDIO.GET_NETWORK_ID_FROM_SOUND_ID,
+	get_sound_id_from_network_id = AUDIO.GET_SOUND_ID_FROM_NETWORK_ID,
+	set_variable_on_sound = AUDIO.SET_VARIABLE_ON_SOUND,
+	is_mobile_phone_call_ongoing = AUDIO.IS_MOBILE_PHONE_CALL_ONGOING,
+	start_audio_scene = AUDIO.START_AUDIO_SCENE,
+	stop_audio_scene = AUDIO.STOP_AUDIO_SCENE,
+	stop_audio_scenes = AUDIO.STOP_AUDIO_SCENES,
+	is_audio_scene_active = AUDIO.IS_AUDIO_SCENE_ACTIVE,
 	play_sound_from_coord = function (soundId, audioName, pos, audioRef, isNetwork, range, p8)
 		AUDIO.PLAY_SOUND_FROM_COORD(soundId, audioName, pos.x, pos.y, pos.z, audioRef, isNetwork, range, p8)
 	end,
+	has_sound_finished = AUDIO.HAS_SOUND_FINISHED,
 	stop_sound = AUDIO.STOP_SOUND
 }
 
