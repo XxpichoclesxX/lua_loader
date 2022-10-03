@@ -97,8 +97,10 @@ local function init()
     end)
     stand.action(credits, "XxRagulxX", {}, "Some installation guides.", function()
     end)
+    stand.action(credits, "Wigger", {}, "Main script tester.", function()
+    end)
     stand.action(credits, "XxpichoclesxX", {}, "Added natives libraries and helped with compatibility.", function()
-end)
+    end)
 
 
 end
