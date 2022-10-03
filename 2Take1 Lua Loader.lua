@@ -21,7 +21,7 @@ local function init()
 				_G[k] = nil
 			end
 		end
-		-- restarts entire scripts
+		-- restarts the entire script so it can load
 		util.restart_script()
 	end)
 
