@@ -995,7 +995,7 @@ input = {
 --}
 
 --Also from Proddy#7272 library
--- Not sure if working
+-- Not sure if working x2
 -- New app natives from (natives-1663599433)
 
 --app = {
@@ -1016,6 +1016,15 @@ input = {
 --  natives.app.app_save_data = newn.APP.APP_SAVE_DATA,
 --  natives.app.app_get_deleted_file_status = newn.APP.APP_GET_DELETED_FILE_STATUS,
 --  natives.app.app_delete_app_data = newn.APP.APP_DELETE_APP_DATA
+--}
+
+--Also from Proddy#7272 library
+-- Not sure if working x3
+-- New app natives from (natives-1663599433)
+
+--audion = {
+--	natives.audio.play_pain = newn.AUDIO.PLAY_PAIN
+--  natives.audio.release_weapon_audio = newn.AUDIO.RELEASE_WEAPON_AUDIO
 --}
 
 
