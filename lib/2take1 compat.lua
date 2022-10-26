@@ -1,20 +1,6 @@
 util.require_natives(1651208000)
 util.keep_running()
 
-
--- Secondary libraries required, to be able to use all without updating every single native
---local required <const> = {
---	"lib/natives-1651208000.lua",
---	"lib/natives-1883599433.lua"
---}
-
---local scriptdir <const> = filesystem.scripts_dir()
---for _, file in ipairs(required) do
---	assert(filesystem.exists(scriptdir .. file), "Required file not found:" .. file)
---end
-
---local newn = require "lib.natives-1883599433.lua"
-
 -- keep stand-specific apis to ourselves
 local stand = menu
 local players = _G["players"]; _G["players"] = nil
@@ -785,7 +771,6 @@ local feature_types = {
 --	end
 --end)
 
-
 menu = {
 	add_feature = function (name, type, parent, handler)
 		local feature_type = feature_types[type]
@@ -960,74 +945,6 @@ input = {
 	end
 }
 
-
--- Added by XxpichoclesxX#0427
-
--- New system natives from (natives-1663599433)
--- Not sure if working, thats why is not active
--- This is for scripts using the Proddy#7272 library on 2take1
--- Start scripts Gta V natives
-
---system = {
---  natives.system.settimera = newn.SYSTEM.SETTIMERA,
---  natives.system.settimerb = newn.SYSTEM.SETTIMERB,
---  natives.system.timestep = newn.SYSTEM.TIMESTEP,
---  natives.system.sin = newn.SYSTEM.SIN,
---  natives.system.cos = newn.SYSTEM.COS,
---  natives.system.sqrt = newn.SYSTEM.SQRT, 
---  natives.system.pow = newn.SYSTEM.POW, 
---  natives.system.log10 = newn.SYSTEM.LOG10,
---  natives.system.vmag = newn.SYSTEM.VMAG,
---  natives.system.vmag = newn.SYSTEM.VMAG2,
---  natives.system.vdist = newn.SYSTEM.VDIST,
---  natives.system.vdist2 = newn.SYSTEM.VDIST2,
---  natives.system.shift_left = newn.SYSTEM.SHIFT_LEFT,
---  natives.system.shift_right = newn.SYSTEM.SHIFT_RIGHT,
---  natives.system.floor = newn.SYSTEM.FLOOR,
---  natives.system.ceil = newn.SYSTEM.CEIL,
---  natives.system.round = newn.SYSTEM.ROUND,
---  natives.system.to_float = newn.SYSTEM.TO_FLOAT,
---  natives.system.set_thread_priority = newn.SYSTEM.SET_THREAD_PRIORITY,
---  natives.system.timera = newn.SYSTEM.TIMERA,
---  natives.system.timerb = newn.SYSTEM.TIMERB,
---  system.start_new_script_with_name_hash_and_args = newn.SYSTEM.START_NEW_SCRIPT_WITH_NAME_HASH_AND_ARGS,
---	system.start_new_script = newn.SYSTEM.START_NEW_SCRIPT
---}
-
---Also from Proddy#7272 library
--- Not sure if working x2
--- New app natives from (natives-1663599433)
-
---app = {
---  natives.app.app_data_valid = newn.APP.APP_DATA_VALID,
---  natives.app.app_get_int =  newn.APP.APP_GET_INT,
---  natives.app.app_get_float = newn.APP.APP_GET_FLOAT,
---  natives.app.app_get_string = newn.APP.APP_GET_STRING,
---  natives.app.app_set_int = newn.APP.APP_SET_INT,
---  natives.app.app_set_float = newn.APP.APP_SET_FLOAT,
---  natives.app.app_set_string = newn.APP.APP_SET_STRING,
---  natives.app.app_set_app = newn.APP.APP_SET_APP,
---  natives.app.app_set_block = newn.APP.APP_SET_BLOCK,
---  natives.app.app_clear_block = newn.APP.APP_CLEAR_BLOCK,
---  natives.app.app_close_app = newn.APP.APP_CLOSE_APP,
---  natives.app.app_close_block = newn.APP.APP_CLOSE_BLOCK,
---  natives.app.app_has_linked_social_club_account = newn.APP.APP_HAS_LINKED_SOCIAL_CLUB_ACCOUNT,
---  natives.app.app_has_synced_data = newn.APP.APP_HAS_SYNCED_DATA,
---  natives.app.app_save_data = newn.APP.APP_SAVE_DATA,
---  natives.app.app_get_deleted_file_status = newn.APP.APP_GET_DELETED_FILE_STATUS,
---  natives.app.app_delete_app_data = newn.APP.APP_DELETE_APP_DATA
---}
-
---Also from Proddy#7272 library
--- Not sure if working x3
--- New app natives from (natives-1663599433)
-
---audion = {
---	natives.audio.play_pain = newn.AUDIO.PLAY_PAIN
---  natives.audio.release_weapon_audio = newn.AUDIO.RELEASE_WEAPON_AUDIO
---}
-
-
 ui = {
 	notify_above_map = function (text, title, colour)
 		util.toast(title.."\n"..text, TOAST_ABOVE_MAP)
@@ -1039,8 +956,6 @@ ui = {
 	set_blip_colour = HUD.SET_BLIP_COLOUR,
 	hide_hud_component_this_frame = HUD.HIDE_HUD_COMPONENT_THIS_FRAME,
 	hide_hud_and_radar_this_frame = HUD.HIDE_HUD_AND_RADAR_THIS_FRAME,
-	hide_minimap_exterior_map_this_frame = HUD.HIDE_MINIMAP_EXTERIOR_MAP_THIS_FRAME,
-	hide_minimap_interior_map_this_frame = HUD.HIDE_MINIMAP_INTERIOR_MAP_THIS_FRAME,
 	get_label_text = HUD._GET_LABEL_TEXT,
 	draw_rect = GRAPHICS.DRAW_RECT,
 	draw_line = function (pos1, pos2 , r, g, b, a)
@@ -1444,7 +1359,7 @@ entity = {
 	set_entity_max_speed = ENTITY.SET_ENTITY_MAX_SPEED,
 	get_entity_pitch = ENTITY.GET_ENTITY_PITCH,
 	get_entity_roll = ENTITY.GET_ENTITY_ROLL,
-	--get_entity_physics_rotation = ENTITY.GET_ENTITY_ROTATION, --Maybe is the same
+	--get_entity_physics_rotation = !#! NO MATCH FOUND !#!,
 	get_entity_physics_heading = ENTITY._GET_ENTITY_PHYSICS_HEADING,
 	--get_entity_physics_pitch = !#! NO MATCH FOUND !#!,
 	--get_entity_physics_roll = !#! NO MATCH FOUND !#!,
@@ -1462,7 +1377,7 @@ entity = {
 	has_entity_been_damaged_by_entity = ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY,
 	does_entity_have_drawable = ENTITY.DOES_ENTITY_HAVE_DRAWABLE,
 	has_entity_collided_with_anything = ENTITY.HAS_ENTITY_COLLIDED_WITH_ANYTHING,
-	--get_entity_entity_has_collided_with = !#! NO MATCH FOUND !#!,   -- No native invokes this shit
+	--get_entity_entity_has_collided_with = !#! NO MATCH FOUND !#!,
 	get_entity_bone_index_by_name = ENTITY.GET_ENTITY_BONE_INDEX_BY_NAME,
 	get_entity_forward_vector = ENTITY.GET_ENTITY_FORWARD_VECTOR,
 	get_entity_model_dimensions = function (hash)
@@ -2136,23 +2051,10 @@ streaming = {
 audio = {
 	play_sound = AUDIO.PLAY_SOUND,
 	play_sound_frontend = AUDIO.PLAY_SOUND_FRONTEND,
-	play_defered_sound_frontend = AUDIO.PLAY_DEFERRED_SOUND_FRONTEND,
 	play_sound_from_entity = AUDIO.PLAY_SOUND_FROM_ENTITY,
-	play_ped_ringtone = AUDIO.PLAY_PED_RINGTONE,
-	is_ped_ringtone_playing = AUDIO.IS_PED_RINGTONE_PLAYING,
-	stop_ped_ringtone = AUDIO.STOP_PED_RINGTONE,
-	get_network_id_from_sound_id = AUDIO.GET_NETWORK_ID_FROM_SOUND_ID,
-	get_sound_id_from_network_id = AUDIO.GET_SOUND_ID_FROM_NETWORK_ID,
-	set_variable_on_sound = AUDIO.SET_VARIABLE_ON_SOUND,
-	is_mobile_phone_call_ongoing = AUDIO.IS_MOBILE_PHONE_CALL_ONGOING,
-	start_audio_scene = AUDIO.START_AUDIO_SCENE,
-	stop_audio_scene = AUDIO.STOP_AUDIO_SCENE,
-	stop_audio_scenes = AUDIO.STOP_AUDIO_SCENES,
-	is_audio_scene_active = AUDIO.IS_AUDIO_SCENE_ACTIVE,
 	play_sound_from_coord = function (soundId, audioName, pos, audioRef, isNetwork, range, p8)
 		AUDIO.PLAY_SOUND_FROM_COORD(soundId, audioName, pos.x, pos.y, pos.z, audioRef, isNetwork, range, p8)
 	end,
-	has_sound_finished = AUDIO.HAS_SOUND_FINISHED,
 	stop_sound = AUDIO.STOP_SOUND
 }
 
@@ -2269,12 +2171,12 @@ native = {
 		local args = { ... }
 		native_invoker.begin_call()
 		for _, arg in ipairs(args) do
-			pluto_switch type(arg) do
-				pluto_case "int":
+			switch type(arg) do
+				case "int":
 				native_invoker.push_arg_int(arg)
 				break
 
-				pluto_case "number":
+				case "number":
 				local i, f = math.modf(arg)
 				if f == 0 then
 					native_invoker.push_arg_int(arg)
@@ -2283,11 +2185,11 @@ native = {
 				end
 				break
 
-				pluto_case "boolean":
+				case "boolean":
 				native_invoker.push_arg_bool(arg)
 				break
 
-				pluto_default:
+				default:
 				error("Unsupported argument for native.call: " .. type(arg) .. " " .. tostring(arg))
 			end
 		end
