@@ -1,32 +1,7 @@
 util.require_natives(1651208000)
 util.keep_running()
 
--- keep stand-specific apis to ourselves
 local stand = menu
-local players = _G["players"]; _G["players"] = nil
-local entities = _G["entities"]; _G["entities"] = nil
-local chat = _G["chat"]; _G["chat"] = nil
-local directx = _G["directx"]; _G["directx"] = nil
-local util = _G["util"]; _G["util"] = nil
-local lang = _G["lang"]; _G["lang"] = nil
-local filesystem = _G["filesystem"]; _G["filesystem"] = nil
-local async_http = _G["async_http"]; _G["async_http"] = nil
-local memory = _G["memory"]; _G["memory"] = nil
-local profiling = _G["profiling"]; _G["profiling"] = nil
-
--- you wouldn't fork a lua
-_PVERSION=nil;newuserdata=nil;io.isdir=nil;io.isfile=nil;io.exists=nil;io.copyto=nil;io.filesize=nil;io.makedir=nil;io.absolute=nil;os.millis=nil;os.nanos=nil;os.seconds=nil;os.unixseconds=nil;string.split=nil;string.lfind=nil;string.rfind=nil;string.strip=nil;string.lstrip=nil;string.rstrip=nil;string.isascii=nil;string.islower=nil;string.isalpha=nil;string.isupper=nil;string.isalnum=nil;string.contains=nil;string.casefold=nil;string.partition=nil;string.endswith=nil;string.startswith=nil;string.find_last_of=nil;string.find_first_of=nil;string.iswhitespace=nil;string.find_last_not_of=nil;string.find_first_not_of=nil;table.freeze=nil;table.isfrozen=nil;table.contains=nil;
-
--- solving problems for users of our platform? no way!
-SCRIPT_NAME=nil
-SCRIPT_FILENAME=nil
-SCRIPT_RELPATH=nil
-SCRIPT_MANUAL_START=nil
-SCRIPT_SILENT_START=nil
-SCRIPT_MAY_NEED_OS=nil
--- On that note, let's just appreciate all the work kektram is doing:
--- "YOU WOULD HAVE CRASHED IF THIS CHECK WASN'T HERE."
--- "Fixed people being able to spawn certain new vehicles that crash your game with chat commands"
 
 package.path = package.path .. ";" .. filesystem.stand_dir() .. "From 2Take1Menu\\scripts\\?.lua"
 
@@ -851,7 +826,7 @@ menu = {
 	delete_thread = function()
 		notif_not_imp()
 	end,
-	is_trusted_mode_enabled = function ()
+	is_trusted_mode_enabled = function (trusted_flag)
 		return true
 	end,
 	get_version = function ()
@@ -2171,7 +2146,7 @@ native = {
 		local args = { ... }
 		native_invoker.begin_call()
 		for _, arg in ipairs(args) do
-			switch type(arg) do
+			pluto_switch type(arg) do
 				case "int":
 				native_invoker.push_arg_int(arg)
 				break
@@ -2209,6 +2184,10 @@ web = {
 	get = function () return 0, "" end
 }
 
+eTrustedFlags = {
+	LUA_TRUST_NATIVES = 0, -- idk what the actual value is, but this isn't nil, so good enough
+}
+
 local fucky_meta = {
 	__newindex=function ()
 	end
@@ -2238,6 +2217,7 @@ setmetatable(fire, fucky_meta)
 setmetatable(hook, fucky_meta)
 setmetatable(native, fucky_meta)
 setmetatable(web, fucky_meta)
+setmetatable(eTrustedFlags, fucky_meta)
 
 -- checked by 2take1script to make sure the script is loaded via 2take1
 -- they might replace this check in a future version, in which case, feel free to use the files from the "From 2Take1Menu" folder in this repository
