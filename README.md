@@ -11,4 +11,4 @@ Btw it is imposible to have a notification system like at 2take1 so please be pa
 
 # Last Update
 
-Added a new native library from stand called "natives-1663599433" needed to execute new gta version natives, like "app" or "system"
+Fixed lib so now you can enter the script, the problem you can not load any single script from 2Take1
